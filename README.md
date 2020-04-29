@@ -1,6 +1,12 @@
 # kustomize-plugin-vault
 Kustomize (v3) Secret Generator Plugin for HashiCorp Vault
 
+# Install
+Kustomize must be built with plugin support and must be exactly the same version that the plugin was compiled with. We therefore provide a kustomize binary with the correct version for the vault plugin for convenience.
+1. Download [kustomize]() binary + [SecretsFromVault.so]()
+2. Move `kustomize` binary somewhere in your path (e.g. `/usr/local/bin`)
+3. Move `SecretsFromVault.so` to `${HOME}/.config/kustomize/plugin/kustomize.rohde-schwarz.com/v1alpha1/secretsfromvault/SecretsFromVault.so`
+
 # How to use
 The plugin generates Kubernetes Secrets from KV Secrets in HashiCorp Vault. 
 The target Vault server needs to be specified in the **VAULT_ADDR** environment variable
@@ -8,7 +14,7 @@ The target Vault server needs to be specified in the **VAULT_ADDR** environment 
 Authentication to Vault can be done using either of following environment variables:
 * **VAULT_TOKEN**: Directly specify the token used to access vault
 * *(Coming Soon)* **VAULT_ROLE_ID** and **VAULT_SECRET_ID**: Authenticate using Vault AppRole authentication
-* *(Coming Soon)* **VAULT_AD_USER** and **VAULT_AD_PASSWORD**: Hard-coded credentials from a Service Account in LDAP/AD
+* **VAULT_LDAP_USER** and **VAULT_LDAP_PASSWORD**: Hard-coded credentials from a Service Account in LDAP/AD
 
 Example for secret generator resource:
 ```
@@ -16,6 +22,7 @@ apiVersion: kustomize.rohde-schwarz.com/v1alpha1
 kind: SecretsFromVault
 metadata:
   name: secret-one
+type: Opaque
 secrets:
   - path: path/to/secret/one
     key: key_one_in_vault_secret_one
@@ -30,5 +37,5 @@ secrets:
 How to reference it in your kustomization.yaml:
 ```
 generators:
-- vault-cloud-azure.yaml
+- secret-one.yaml
 ```

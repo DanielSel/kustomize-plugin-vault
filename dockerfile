@@ -6,8 +6,10 @@ RUN apt update && apt install -y \
 
 WORKDIR /workspace
 RUN GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v3@v3.5.4
+RUN cp /go/bin/kustomize /workspace/kustomize 
 COPY . .
-RUN go build -buildmode plugin -o SecretsFromVault.so ./SecretsFromVault.go 
+RUN go mod download
+RUN go build -buildmode plugin -o SecretsFromVault.so main.go
 
 
 # RUNTIME

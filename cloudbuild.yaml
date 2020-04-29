@@ -3,3 +3,7 @@ steps:
   args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/kustomize', '.' ]
 images:
 - 'gcr.io/$PROJECT_ID/kustomize'
+artifacts:
+  objects:
+    location: gs://sel-wtf-kustomize
+    paths: [kustomize, SecretsFromVault.so]
