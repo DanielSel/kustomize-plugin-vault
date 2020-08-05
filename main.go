@@ -71,5 +71,5 @@ func (p *plugin) Generate() (resmap.ResMap, error) {
 		args.LiteralSources = append(args.LiteralSources, entry)
 	}
 	return p.h.ResmapFactory().FromSecretArgs(
-		kv.NewLoader(p.h.Loader(), p.h.Validator()), p.Options, args)
+		kv.NewLoader(p.h.Loader(), p.h.Validator()), args)
 }

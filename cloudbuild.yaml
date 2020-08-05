@@ -1,9 +1,34 @@
+substitutions:
+  _GO_VERSION: "1.14"
+  _KUSTOMIZE_VERSION: "v3.8.1"
+  
 steps:
+# Pull previous build incl. intermediate layers (if they exist) as cache
 - name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/kustomize', '.' ]
+  entrypoint: 'bash'
+  args: ['-c', 'docker pull gcr.io/$PROJECT_ID/zzz-cache/kustomize:latest || exit 0']
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args: ['-c', 'docker pull gcr.io/$PROJECT_ID/kustomize:latest || exit 0']
+# Workaround for https://github.com/moby/moby/issues/34715
+# Build and tag the intermediate stage as cache 
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/zzz-cache/kustomize:latest', '--cache-from', 'gcr.io/$PROJECT_ID/zzz-cache/kustomize:latest', '--target', 'builder', '--build-arg', 'GO_VERSION=${_GO_VERSION}', '--build-arg', 'KZ_VERSION=${_KUSTOMIZE_VERSION}', '.' ]
+# Build Runtime Image
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/kustomize:${_KUSTOMIZE_VERSION}', '--cache-from', 'gcr.io/$PROJECT_ID/zzz-cache/kustomize:latest', '--cache-from', 'gcr.io/$PROJECT_ID/kustomize:latest', '--build-arg', 'GO_VERSION=${_GO_VERSION}', '--build-arg', 'KZ_VERSION=${_KUSTOMIZE_VERSION}', '.' ]
+# Add 'latest' tag
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['tag', 'gcr.io/$PROJECT_ID/kustomize:${_KUSTOMIZE_VERSION}', 'gcr.io/$PROJECT_ID/kustomize:latest' ]
+# Extract artifacts for publishing to GCS
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'run','--volume', '/workspace:/workspace', '--rm', '--entrypoint', 'sh', 'gcr.io/$PROJECT_ID/kustomize', '-c', 'cp -f /usr/bin/kustomize /workspace/ && cp -f /opt/kustomize/plugin/kustomize.rohde-schwarz.com/v1alpha1/secretsfromvault/SecretsFromVault.so /workspace/' ]
+
 images:
-- 'gcr.io/$PROJECT_ID/kustomize'
+- gcr.io/$PROJECT_ID/kustomize:${_KUSTOMIZE_VERSION}
+- gcr.io/$PROJECT_ID/kustomize:latest
+
 artifacts:
   objects:
-    location: gs://sel-wtf-kustomize
+    location: gs://$PROJECT_ID-kustomize
     paths: [kustomize, SecretsFromVault.so]

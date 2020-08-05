@@ -4,11 +4,9 @@ go 1.14
 
 require (
 	github.com/hashicorp/vault/api v1.0.4
-	sigs.k8s.io/kustomize/api v0.3.2
-	sigs.k8s.io/yaml v1.1.0
+	sigs.k8s.io/kustomize/api v0.5.1
+	sigs.k8s.io/yaml v1.2.0
 )
 
-exclude (
-	github.com/russross/blackfriday v2.0.0+incompatible
-	sigs.k8s.io/kustomize/api v0.2.0
-)
+replace github.com/hashicorp/go-cleanhttp => github.com/hashicorp/go-cleanhttp v0.5.0
+replace github.com/pkg/errors => github.com/pkg/errors v0.9.1
